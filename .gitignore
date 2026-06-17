@@ -1,0 +1,13 @@
+.DS_Store
+.env
+.env.*
+*.xlsx
+*.xls
+/raw_data/
+/internal/
+/data/
+/kk26_voting/
+/previous_old_scripts/
+/artifacts/
+__pycache__/
+*.py[cod]
