@@ -1,4 +1,6 @@
 function loadProjects() {
+    const i18n = window.KK26_I18N;
+    const t = (key, values) => i18n ? i18n.t(key, values) : key;
     const introDiv = document.getElementById('intro-text');
     const grid = document.getElementById('receipts-grid');
 
@@ -24,7 +26,7 @@ function loadProjects() {
             const spent = fundedProjects
                 .filter(p => p.group === g)
                 .reduce((sum, p) => sum + p.total_raised, 0);
-            return `<span>${g}: CHF ${spent.toLocaleString('de-CH', { maximumFractionDigits: 0 })}</span>`;
+            return `<span>${g}: CHF ${formatProjectNumber(spent, { maximumFractionDigits: 0 })}</span>`;
         }).join(' ');
 
         // Calculate cutoff efficiency per group (last funded project's cost per point)
@@ -42,18 +44,22 @@ function loadProjects() {
         // Update header/intro
         introDiv.className = 'intro-section';
         introDiv.innerHTML = `
-            <p class="philosophy">Das MES-Verfahren hilft dabei, "einfache" Entscheidungen frühzeitig zu identifizieren. So bleibt am Diskussionstag mehr Zeit, um die komplexeren Projekte gemeinsam im Dialog zu klären.</p>
-            <p>Hier sehen Sie alle eingereichten Projekte. Die durchschnittlichen Projektkosten belaufen sich auf <strong>CHF ${avgCost.toLocaleString('en-CH', { maximumFractionDigits: 0 })}</strong>. Bisher wurden insgesamt <strong>${totalFunded} Projekte</strong> mit einem Gesamtbudget von <strong>CHF ${totalSpent.toLocaleString('en-CH', { maximumFractionDigits: 0 })}</strong> finanziert.</p>
+            <p class="philosophy">${t('projects.intro.philosophy')}</p>
+            <p>${t('projects.intro.stats', {
+                avgCost: formatProjectNumber(avgCost, { maximumFractionDigits: 0 }),
+                totalFunded,
+                totalSpent: formatProjectNumber(totalSpent, { maximumFractionDigits: 0 })
+            })}</p>
 
             <div class="intro-stats">
                 <div class="stat-group-breakdown">
-                    <span class="label">Geförderte Projekte pro Gruppe</span>
+                    <span class="label">${t('projects.stats.fundedPerGroup')}</span>
                     <div class="badges">
                         ${groupStats}
                     </div>
                 </div>
                 <div class="stat-group-breakdown">
-                    <span class="label">Bisher ausgegebenes Budget pro Gruppe</span>
+                    <span class="label">${t('projects.stats.spentPerGroup')}</span>
                     <div class="badges">
                         ${groupSpendStats}
                     </div>
@@ -63,9 +69,9 @@ function loadProjects() {
         document.querySelectorAll('.filter-bar').forEach(bar => bar.style.display = 'flex');
 
         // Update Filter counts
-        const allBtn = document.querySelector('.combined-filters .filter-btn[data-filter-group="ALL"]');
+        const allBtn = document.querySelector('.group-filters .filter-btn[data-filter-group="ALL"]');
         if (allBtn) {
-            allBtn.textContent = `Alle Gruppen (${data.project_receipts.length})`;
+            allBtn.textContent = t('filters.allGroupsCount', { count: data.project_receipts.length });
         }
 
         window.receiptsData = data;
@@ -91,7 +97,7 @@ function loadProjects() {
     } catch (err) {
         console.error('Error loading projects:', err);
         if (introDiv) {
-            introDiv.innerHTML = `<p style="color:var(--accent-red)">Fehler beim Laden der Projektdaten.</p>`;
+            introDiv.innerHTML = `<p style="color:var(--accent-red)">${t('projects.error.data')}</p>`;
         }
     }
 }
@@ -152,9 +158,9 @@ function updateFilters() {
             if (!('ontouchstart' in window)) { // Only show on hover for non-touch devices
                 tooltip.innerHTML = `
                     <div style="font-weight: 700; margin-bottom: 0.25rem;">${voterId}</div>
-                    <div style="font-size: 0.9em; color: #ccc;">Stimme: ${vote}</div>
-                    <div style="font-size: 0.9em; color: #ccc;">Budget bei Betrachtung: ${budget}</div>
-                    <div style="font-size: 0.9em; color: #ccc;">Beitrag: ${contribution} CHF</div>
+                    <div style="font-size: 0.9em; color: #ccc;">${getProjectText('projects.tooltip.vote')}: ${vote}</div>
+                    <div style="font-size: 0.9em; color: #ccc;">${getProjectText('projects.tooltip.budget')}: ${budget}</div>
+                    <div style="font-size: 0.9em; color: #ccc;">${getProjectText('projects.tooltip.contribution')}: ${contribution} CHF</div>
                 `;
                 tooltip.classList.add('show');
                 positionTooltip(e, tooltip);
@@ -171,9 +177,9 @@ function updateFilters() {
             e.preventDefault(); // Prevent default touch behavior (like scrolling)
             tooltip.innerHTML = `
                 <div style="font-weight: 700; margin-bottom: 0.25rem;">${voterId}</div>
-                <div style="font-size: 0.9em; color: #ccc;">Stimme: ${vote}</div>
-                <div style="font-size: 0.9em; color: #ccc;">Budget bei Betrachtung: ${budget}</div>
-                <div style="font-size: 0.9em; color: #ccc;">Beitrag: ${contribution} CHF</div>
+                <div style="font-size: 0.9em; color: #ccc;">${getProjectText('projects.tooltip.vote')}: ${vote}</div>
+                <div style="font-size: 0.9em; color: #ccc;">${getProjectText('projects.tooltip.budget')}: ${budget}</div>
+                <div style="font-size: 0.9em; color: #ccc;">${getProjectText('projects.tooltip.contribution')}: ${contribution} CHF</div>
             `;
             tooltip.classList.add('show');
             positionTooltip(e, tooltip);
@@ -259,6 +265,9 @@ function updateFilters() {
 }
 
 function renderProjectReceipt(p, groupCutoffs, displayRank) {
+    const i18n = window.KK26_I18N;
+    const lang = i18n ? i18n.getLanguage() : 'de';
+    const t = (key, values) => i18n ? i18n.t(key, values) : key;
     const div = document.createElement('div');
     div.className = 'receipt';
     div.dataset.group = p.group;
@@ -268,12 +277,12 @@ function renderProjectReceipt(p, groupCutoffs, displayRank) {
     const groupPeopleCount = data && Array.isArray(data.voter_receipts)
         ? data.voter_receipts.filter(v => v.group === p.group).length
         : Math.max(1, p.supporter_count);
-    const totalPointsDisplay = p.total_utility.toLocaleString('de-CH', { minimumFractionDigits: 0, maximumFractionDigits: 1 });
-    const totalCostDisplay = `${p.total_cost.toLocaleString('de-CH', { maximumFractionDigits: 0 })} CHF`;
-    const pointsPerPersonDisplay = (p.total_utility / Math.max(1, groupPeopleCount)).toLocaleString('de-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const totalPointsDisplay = formatProjectNumber(p.total_utility, { minimumFractionDigits: 0, maximumFractionDigits: 1 });
+    const totalCostDisplay = `${formatProjectNumber(p.total_cost, { maximumFractionDigits: 0 })} CHF`;
+    const pointsPerPersonDisplay = formatProjectNumber((p.total_utility / Math.max(1, groupPeopleCount)), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const chfPerPointValue = p.total_utility > 0 ? (p.total_cost / p.total_utility) : null;
     const chfPerPointDisplay = chfPerPointValue !== null
-        ? chfPerPointValue.toLocaleString('de-CH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+        ? formatProjectNumber(chfPerPointValue, { minimumFractionDigits: 0, maximumFractionDigits: 0 })
         : '–';
 
     const coveragePercent = p.total_cost > 0 && p.supporter_budget_at_consideration
@@ -287,16 +296,19 @@ function renderProjectReceipt(p, groupCutoffs, displayRank) {
         <tr class="item-row funded project-supporter-row">
             <td class="item-title">
                 <span class="supporter-id">${s.voter_id}</span>
-                <span class="supporter-budget">(${s.budget_at_consideration.toLocaleString('de-CH', { maximumFractionDigits: 0 })} CHF)</span>
+                <span class="supporter-budget">(${formatProjectNumber(s.budget_at_consideration, { maximumFractionDigits: 0 })} CHF)</span>
             </td>
             <td class="item-vote">${getVoteLabel(s.vote)}</td>
-            <td class="item-amount">${s.contribution.toLocaleString('de-CH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+            <td class="item-amount">${formatProjectNumber(s.contribution, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
         </tr>
     `).join('');
 
     const statusObj = p.is_funded
-        ? { label: 'FINANZIERT', class: 'funded' }
-        : { label: 'NICHT FINANZIERT', class: 'unfunded' };
+        ? { label: t('projects.card.status.funded'), class: 'funded' }
+        : { label: t('projects.card.status.unfunded'), class: 'unfunded' };
+    const explanation = lang === 'en'
+        ? (p.unified_explanation_en || p.unified_explanation_de)
+        : (p.unified_explanation_de || p.unified_explanation_en);
 
     div.innerHTML = `
         <div class="receipt-modern project-card ${statusObj.class}" style="--coverage: ${coveragePercent}%;">
@@ -315,7 +327,7 @@ function renderProjectReceipt(p, groupCutoffs, displayRank) {
                         <span class="subtitle-small">Winterthur</span>
                     </div>
                     <h2 class="project-title">${p.title}</h2>
-                    <div class="project-supporter-count">Unterstützer:innen (${p.supporters.length})</div>
+                    <div class="project-supporter-count">${t('projects.card.supporters', { count: p.supporters.length })}</div>
                 </div>
 
                 <div class="supporter-table-frame">
@@ -323,20 +335,20 @@ function renderProjectReceipt(p, groupCutoffs, displayRank) {
                         <thead>
                             <tr>
                                 <th class="supporter-id-col">ID</th>
-                                <th class="supporter-vote-col">Stimme</th>
-                                <th class="supporter-amount-col">Beitrag</th>
+                                <th class="supporter-vote-col">${t('projects.card.vote')}</th>
+                                <th class="supporter-amount-col">${t('projects.card.contribution')}</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${supporterRows}
                             <tr class="supporter-total-row">
-                                <td>Summe</td>
+                                <td>${t('projects.card.sum')}</td>
                                 <td>
-                                    <span>Punkte</span>
+                                    <span>${t('projects.card.points')}</span>
                                     <strong class="supporter-total-points-value">${totalPointsDisplay}</strong>
                                 </td>
                                 <td>
-                                    <span>Kosten</span>
+                                    <span>${t('projects.card.cost')}</span>
                                     <strong class="supporter-total-cost-value">${totalCostDisplay}</strong>
                                 </td>
                             </tr>
@@ -344,16 +356,16 @@ function renderProjectReceipt(p, groupCutoffs, displayRank) {
                     </table>
                 </div>
 
-                ${p.unified_explanation_de ? `
+                ${explanation ? `
                     <div class="reasoning-box">
-                        <p>"${p.unified_explanation_de}"</p>
+                        <p>"${explanation}"</p>
                     </div>
                 ` : ''}
 
                 ${!p.is_funded ? `
                     <div class="rejection-box">
                         <div class="budget-coverage-topline">
-                            <span>Budget-Abdeckung</span>
+                            <span>${t('projects.card.coverage')}</span>
                             <strong>${coverageLabel}%</strong>
                         </div>
                         <div class="budget-coverage-track">
@@ -364,19 +376,19 @@ function renderProjectReceipt(p, groupCutoffs, displayRank) {
 
                 <div class="project-bottom-bar">
                     <div class="project-bottom-metric">
-                        <span>Punkte pro Person</span>
+                        <span>${t('projects.card.pointsPerPerson')}</span>
                         <strong>${pointsPerPersonDisplay}</strong>
-                        <small>Pnt</small>
+                        <small>${t('projects.card.pointsShort')}</small>
                     </div>
                     <div class="project-bottom-metric">
-                        <span>CHF pro Punkt</span>
+                        <span>${t('projects.card.chfPerPoint')}</span>
                         <strong>${chfPerPointDisplay}</strong>
                         <small>CHF</small>
                     </div>
                     <div class="project-bottom-metric project-bottom-metric-primary">
-                        <span>Punkte</span>
+                        <span>${t('projects.card.points')}</span>
                         <strong>${totalPointsDisplay}</strong>
-                        <small>Pnt</small>
+                        <small>${t('projects.card.pointsShort')}</small>
                     </div>
                 </div>
             </div>
@@ -394,6 +406,16 @@ function getVoteLabel(vote) {
         "Nein": "✗✗",
         "": "–"
     }[vote] || vote;
+}
+
+function getProjectText(key, values) {
+    return window.KK26_I18N ? window.KK26_I18N.t(key, values) : key;
+}
+
+function formatProjectNumber(value, options = {}) {
+    return window.KK26_I18N
+        ? window.KK26_I18N.formatNumber(value, options)
+        : Number(value || 0).toLocaleString('de-CH', options).replace(/’/g, "'");
 }
 
 function filterReceipts(group) {
@@ -417,7 +439,10 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error loading public data:', err);
             const introDiv = document.getElementById('intro-text');
             if (introDiv) {
-                introDiv.innerHTML = `<p style="color:var(--accent-red)">Fehler beim Laden der öffentlichen Projektdaten.</p>`;
+                const message = window.KK26_I18N
+                    ? window.KK26_I18N.t('projects.error.publicData')
+                    : 'Fehler beim Laden der öffentlichen Projektdaten.';
+                introDiv.innerHTML = `<p style="color:var(--accent-red)">${message}</p>`;
             }
         });
 });

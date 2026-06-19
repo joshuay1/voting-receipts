@@ -1,4 +1,6 @@
 function loadReceipts() {
+    const i18n = window.KK26_I18N;
+    const t = (key, values) => i18n ? i18n.t(key, values) : key;
     const introDiv = document.getElementById('intro-text');
     const techInfo = document.getElementById('tech-info');
     const filterBar = document.getElementById('filter-bar');
@@ -18,24 +20,24 @@ function loadReceipts() {
         const avgSpent = totalSpent / totalVoters;
         const avgFunded = totalFunded / totalVoters;
 
-        const avgFundedText = avgFunded.toFixed(1).replace('.', ',');
-        const avgSpentText = avgSpent
-            .toLocaleString('de-CH', { maximumFractionDigits: 0 })
-            .replace(/’/g, "'");
+        const avgFundedText = i18n
+            ? i18n.formatNumber(avgFunded, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+            : avgFunded.toFixed(1).replace('.', ',');
+        const avgSpentText = formatReceiptCHF(avgSpent, 0);
 
         // Update header/intro
         introDiv.className = 'intro-section'; // Ensure it has the class
         introDiv.innerHTML = `
-            <p class="philosophy">Die Method of Equal Shares ermöglicht es, «einfache» Entscheidungen frühzeitig zu erkennen und sicherzustellen, dass alle Beteiligten einen möglichst gleichwertigen Einfluss auf den Entscheidungsprozess haben. So bleibt am Entscheidungstag mehr Zeit, um die kritischen Projekte gemeinsam und im Dialog zu verhandeln.</p>
-            <p>Hier sehen Sie die persönlichen Stimmzettel der Abstimmung des Kultur Komitees 2026. Insgesamt haben <strong>${totalVoters} Personen</strong> teilgenommen. Im Durchschnitt wurden pro Person <strong>${avgFundedText} Projekte</strong> mit einem Betrag von <strong>CHF ${avgSpentText}</strong> finanziert. Über die verbleibenden Projekte wurde am Entscheidungstag in Person verhandelt.</p>
-            <p>Zum Schutz der Persönlichkeitsrechte wurden die Namen der Komiteemitglieder pseudonymisiert und die Projektnamen durch fiktive Bezeichnungen ersetzt.</p>
+            <p class="philosophy">${t('receipts.intro.philosophy')}</p>
+            <p>${t('receipts.intro.stats', { totalVoters, avgFunded: avgFundedText, avgSpent: avgSpentText })}</p>
+            <p>${t('receipts.intro.privacy')}</p>
         `;
         techInfo.style.display = 'block';
         filterBar.style.display = 'flex';
 
         // Update Filter counts
         const allBtn = document.querySelector('.filter-btn[data-group="ALL"]');
-        if(allBtn) allBtn.textContent = `Alle (${data.voter_receipts.length})`;
+        if(allBtn) allBtn.textContent = `${t('filters.all')} (${data.voter_receipts.length})`;
 
         grid.innerHTML = ''; // Clear loading state
 
@@ -52,13 +54,15 @@ function loadReceipts() {
     } catch (err) {
         console.error('Error loading receipts:', err);
         if (introDiv) {
-            introDiv.innerHTML = `<p style="color:var(--accent-red); background: rgba(255,0,0,0.1); padding: 1rem; border-radius: 8px;">Fehler beim Laden der Daten. Bitte stellen Sie sicher, dass <code>assets/data/kk26.json</code> korrekt geladen wurde.</p>`;
+            introDiv.innerHTML = `<p style="color:var(--accent-red); background: rgba(255,0,0,0.1); padding: 1rem; border-radius: 8px;">${t('receipts.error.data')}</p>`;
         }
     }
 }
 
 
 function renderReceipt(r) {
+    const i18n = window.KK26_I18N;
+    const t = (key, values) => i18n ? i18n.t(key, values) : key;
     const div = document.createElement('div');
     div.className = 'receipt';
     div.dataset.group = r.group;
@@ -74,8 +78,8 @@ function renderReceipt(r) {
         sum + Number(project.total_cost || project.total_raised || 0)
     ), 0);
     const fundedNote = fundedProjectCount
-        ? `Bisher wurden insgesamt ${fundedProjectCount} Projekte mit einem Gesamtbudget von CHF ${formatReceiptCHF(fundedBudget, 0)} finanziert.`
-        : 'Die finanzierten Projekte wurden mit der Method of Equal Shares berechnet.';
+        ? t('receipts.fundedNote', { count: fundedProjectCount, budget: formatReceiptCHF(fundedBudget, 0) })
+        : t('receipts.fundedNoteDefault');
 
     const fundedRows = fundedItems
         .map(it => `
@@ -104,7 +108,7 @@ function renderReceipt(r) {
                 <div class="receipt-logo">kk26</div>
                 <div class="receipt-subtitle">Kultur Komitee Winterthur</div>
                 <div class="receipt-meta-line">
-                    <span>Gruppe ${r.group}</span>
+                    <span>${t('receipts.group', { group: r.group })}</span>
                     <span>${r.voter_id}</span>
                 </div>
             </div>
@@ -114,12 +118,12 @@ function renderReceipt(r) {
             <table class="receipt-table">
                 <thead>
                     <tr>
-                        <th class="receipt-section-title col-title" colspan="3">Finanzierte Projekte</th>
+                        <th class="receipt-section-title col-title" colspan="3">${t('receipts.section.funded')}</th>
                     </tr>
                     <tr>
-                        <th class="col-title">Artikel</th>
-                        <th class="col-vote">Stimme</th>
-                        <th class="col-amount">Betrag</th>
+                        <th class="col-title">${t('receipts.table.article')}</th>
+                        <th class="col-vote">${t('receipts.table.vote')}</th>
+                        <th class="col-amount">${t('receipts.table.amount')}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -131,11 +135,11 @@ function renderReceipt(r) {
 
             <div class="receipt-totals">
                 <div class="receipt-total-row">
-                    <span>Anzahl Projekte</span>
+                    <span>${t('receipts.total.projectCount')}</span>
                     <strong>${r.funded_count}</strong>
                 </div>
                 <div class="receipt-total-row grand">
-                    <span>Total CHF</span>
+                    <span>${t('receipts.total.chf')}</span>
                     <strong>${formatReceiptCHF(r.total_spent, 2)}</strong>
                 </div>
             </div>
@@ -152,12 +156,12 @@ function renderReceipt(r) {
                 <table class="receipt-table unfunded-table">
                     <thead>
                         <tr>
-                            <th class="receipt-section-title col-title" colspan="3">Nicht finanzierte Projekte</th>
+                            <th class="receipt-section-title col-title" colspan="3">${t('receipts.section.unfunded')}</th>
                         </tr>
                         <tr>
-                            <th class="col-title">Artikel</th>
-                            <th class="col-vote">Stimme</th>
-                            <th class="col-amount">Betrag</th>
+                            <th class="col-title">${t('receipts.table.article')}</th>
+                            <th class="col-vote">${t('receipts.table.vote')}</th>
+                            <th class="col-amount">${t('receipts.table.amount')}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -170,8 +174,8 @@ function renderReceipt(r) {
 
             <div class="receipt-footer" aria-label="Method of Equal Shares">
                 <span>Kultur Komitee Winterthur</span>
-                <span>Stiftung für Kunst, Kultur und Geschichte</span>
-                <span>Vielen Dank für Ihre Teilnahme!</span>
+                <span>${t('receipts.footer.foundation')}</span>
+                <span>${t('receipts.footer.thanks')}</span>
                 <span class="receipt-barcode" aria-hidden="true">||||||||||||||||||||</span>
                 <span class="receipt-code">${code}</span>
             </div>
@@ -183,16 +187,22 @@ function renderReceipt(r) {
 }
 
 function formatCompactCHF(value) {
-    return Number(value || 0).toLocaleString('de-CH', { maximumFractionDigits: 0 });
+    return window.KK26_I18N
+        ? window.KK26_I18N.formatNumber(value, { maximumFractionDigits: 0 })
+        : Number(value || 0).toLocaleString('de-CH', { maximumFractionDigits: 0 });
 }
 
 function formatReceiptCHF(value, digits) {
-    return Number(value || 0)
-        .toLocaleString('de-CH', {
+    if (window.KK26_I18N) {
+        return window.KK26_I18N.formatNumber(value, {
             minimumFractionDigits: digits,
             maximumFractionDigits: digits
-        })
-        .replace(/’/g, "'");
+        });
+    }
+    return Number(value || 0).toLocaleString('de-CH', {
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits
+    }).replace(/’/g, "'");
 }
 
 function truncate(str, n) {
@@ -231,7 +241,10 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error loading public data:', err);
             const introDiv = document.getElementById('intro-text');
             if (introDiv) {
-                introDiv.innerHTML = `<p style="color:var(--accent-red); background: rgba(255,0,0,0.1); padding: 1rem; border-radius: 8px;">Fehler beim Laden der öffentlichen Daten.</p>`;
+                const message = window.KK26_I18N
+                    ? window.KK26_I18N.t('receipts.error.publicData')
+                    : 'Fehler beim Laden der öffentlichen Daten.';
+                introDiv.innerHTML = `<p style="color:var(--accent-red); background: rgba(255,0,0,0.1); padding: 1rem; border-radius: 8px;">${message}</p>`;
             }
         });
 });

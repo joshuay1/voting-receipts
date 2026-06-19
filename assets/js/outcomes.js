@@ -5,6 +5,7 @@ const OUTCOME_GROUP_COLORS = {
 };
 
 async function loadGroupData(group) {
+    const t = (key, values) => window.KK26_I18N ? window.KK26_I18N.t(key, values) : key;
     window.currentGroup = group;
     // Update UI state
     document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -19,7 +20,7 @@ async function loadGroupData(group) {
         console.error('Error loading data:', err);
         const tableBody = document.getElementById('table-body');
         if (tableBody) {
-            tableBody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 3rem; color: #f72585;">Fehler beim Laden der Daten.<br><small>${err.message}</small></td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 3rem; color: #f72585;">${t('outcomes.error.data')}<br><small>${err.message}</small></td></tr>`;
         }
     }
 }
@@ -34,24 +35,27 @@ function getSortedOutcomeData(data) {
 }
 
 function getOutcomeTableHeaderMarkup() {
+    const t = (key, values) => window.KK26_I18N ? window.KK26_I18N.t(key, values) : key;
     return `
         <thead>
             <tr>
-                <th class="th-rank">RANG</th>
-                <th class="th-project">PROJEKT</th>
-                <th class="th-budget text-right">BUDGET</th>
-                <th class="th-points text-center">PUNKTE</th>
-                <th class="th-points-per-person text-center">PNT/PERSON</th>
-                <th class="th-efficiency text-center">CHF/PUNKT</th>
-                <th class="th-status text-center">MES</th>
-                <th class="th-coverage text-center">ABDECKUNG</th>
-                <th class="th-budget-flow">BUDGET-ABFLUSS</th>
+                <th class="th-rank">${t('outcomes.table.rank')}</th>
+                <th class="th-project">${t('outcomes.table.project')}</th>
+                <th class="th-budget text-right">${t('outcomes.table.budget')}</th>
+                <th class="th-points text-center">${t('outcomes.table.points')}</th>
+                <th class="th-points-per-person text-center">${t('outcomes.table.pointsPerPerson')}</th>
+                <th class="th-efficiency text-center">${t('outcomes.table.chfPerPoint')}</th>
+                <th class="th-status text-center">${t('outcomes.table.mes')}</th>
+                <th class="th-coverage text-center">${t('outcomes.table.coverage')}</th>
+                <th class="th-budget-flow">${t('outcomes.table.budgetFlow')}</th>
             </tr>
         </thead>
     `;
 }
 
 function renderOutcomeRows(tbody, data, group) {
+    const i18n = window.KK26_I18N;
+    const t = (key, values) => i18n ? i18n.t(key, values) : key;
     tbody.innerHTML = '';
 
     const sortedData = getSortedOutcomeData(data);
@@ -75,12 +79,14 @@ function renderOutcomeRows(tbody, data, group) {
         if (isFunded) row.classList.add('row-funded');
         
         const costVal = parseFloat(item.Cost_CHF || 0);
-        const cost = costVal.toLocaleString('en-CH', { maximumFractionDigits: 0 });
+        const cost = formatOutcomeNumber(costVal, { maximumFractionDigits: 0 });
         
         const ja = item.Vote_Ja || '0';
         const eherJa = item.Vote_EherJa || '0';
         const totalUtility = parseFloat(item.Total_Utility || 0);
-        const pointsPerPerson = groupPeopleCount > 0 ? (totalUtility / groupPeopleCount).toFixed(2) : '0.00';
+        const pointsPerPerson = groupPeopleCount > 0
+            ? formatOutcomeNumber(totalUtility / groupPeopleCount, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+            : formatOutcomeNumber(0, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
         const spentBefore = runningSpend;
         if (isFunded) runningSpend += costVal;
@@ -123,14 +129,14 @@ function renderOutcomeRows(tbody, data, group) {
             <td class="col-cost" style="text-align: right; font-weight: 700; font-family: 'JetBrains Mono', monospace;">${cost}</td>
             <td class="col-points" style="text-align: center;">
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 0.15rem;">
-                    <div class="metric-value" style="font-size: 1rem; font-weight: 800; color: var(--text-primary);">${totalUtility}</div>
-                    <div class="metric-detail" style="font-size: 0.7rem; color: var(--text-dim); line-height: 1;">${ja}J · ${eherJa}E</div>
+                    <div class="metric-value" style="font-size: 1rem; font-weight: 800; color: var(--text-primary);">${formatOutcomeNumber(totalUtility, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</div>
+                    <div class="metric-detail" style="font-size: 0.7rem; color: var(--text-dim); line-height: 1;">${ja}${t('outcomes.vote.yesShort')} · ${eherJa}${t('outcomes.vote.ratherYesShort')}</div>
                 </div>
             </td>
             <td class="col-points-per-person" style="text-align: center;"><span class="metric-value">${pointsPerPerson}</span></td>
-            <td class="col-efficiency" style="text-align: center;"><span class="metric-value">${totalUtility > 0 ? parseFloat(item.Efficiency || 0).toFixed(0) : '—'}</span></td>
+            <td class="col-efficiency" style="text-align: center;"><span class="metric-value">${totalUtility > 0 ? formatOutcomeNumber(parseFloat(item.Efficiency || 0), { maximumFractionDigits: 0 }) : '—'}</span></td>
             <td class="col-status" style="text-align: center;">
-                ${isFunded ? `<span class="status-pill" title="Vom MES finanziert" aria-label="Vom MES finanziert">✓</span>` : '<span style="color: #ccc;">—</span>'}
+                ${isFunded ? `<span class="status-pill" title="${t('outcomes.status.fundedTitle')}" aria-label="${t('outcomes.status.fundedTitle')}">✓</span>` : '<span style="color: #ccc;">—</span>'}
             </td>
             <td class="col-coverage" style="text-align: center;">
                 <div class="metric-value" style="font-weight: 700; color: ${isFunded ? '#2a9d8f' : '#e76f51'};">
@@ -149,8 +155,8 @@ function renderOutcomeRows(tbody, data, group) {
                     </div>
                     <div class="budget-flow-labels" style="display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #888;">
                         <div class="budget-flow-remaining">
-                            <span class="budget-flow-prefix" style="color: #bbb; margin-right: 0.5rem;">Verfügbar:</span>
-                            <span class="budget-flow-value" style="font-weight: 800; color: var(--text-primary);">${availableBefore.toLocaleString('en-CH', { maximumFractionDigits: 0 })}</span>
+                            <span class="budget-flow-prefix" style="color: #bbb; margin-right: 0.5rem;">${t('outcomes.table.available')}</span>
+                            <span class="budget-flow-value" style="font-weight: 800; color: var(--text-primary);">${formatOutcomeNumber(availableBefore, { maximumFractionDigits: 0 })}</span>
                         </div>
                     </div>
                 </div>
@@ -191,6 +197,12 @@ function renderOutcomeTableForGroup(group, container = document.getElementById('
 
 window.renderOutcomeTableForGroup = renderOutcomeTableForGroup;
 
+function formatOutcomeNumber(value, options = {}) {
+    return window.KK26_I18N
+        ? window.KK26_I18N.formatNumber(value, options)
+        : Number(value || 0).toLocaleString('de-CH', options).replace(/’/g, "'");
+}
+
 // Initial load
 document.addEventListener('DOMContentLoaded', () => {
     (window.KK26_DATA_READY || Promise.resolve())
@@ -205,7 +217,10 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error loading public data:', err);
             const tableBody = document.getElementById('table-body');
             if (tableBody) {
-                tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 3rem; color: #f72585;">Fehler beim Laden der öffentlichen Daten.</td></tr>';
+                const message = window.KK26_I18N
+                    ? window.KK26_I18N.t('outcomes.error.publicData')
+                    : 'Fehler beim Laden der öffentlichen Daten.';
+                tableBody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 3rem; color: #f72585;">${message}</td></tr>`;
             }
         });
 });
