@@ -1,4 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700&family=Space+Grotesk:wght@500;700&display=swap');
+@font-face {
+    font-family: "Basis Grotesque";
+    src:
+        url("../fonts/BasisGrotesque-Medium.woff2") format("woff2"),
+        url("../fonts/BasisGrotesque-Medium.woff") format("woff");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "New Cooper Beta";
+    src:
+        url("../fonts/NewCooperBeta-Regular.woff2") format("woff2"),
+        url("../fonts/NewCooperBeta-Regular.woff") format("woff");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
 
 :root {
     --bg-color: #ffffff;
@@ -26,10 +44,10 @@
     --receipt-border: 2px solid #000000;
 
     /* Typography - Standardized */
-    --font-main: "Basis Grotesque", "Space Grotesk", Arial, sans-serif;
-    --font-serif: "New Cooper Beta", "Fraunces", Georgia, 'Times New Roman', serif;
-    --font-mono: "Basis Grotesque", "Space Grotesk", Arial, sans-serif;
-    --font-receipt: "Courier New", Courier, monospace;
+    --font-main: "Basis Grotesque", Arial, sans-serif;
+    --font-serif: "New Cooper Beta", Georgia, 'Times New Roman', serif;
+    --font-mono: "Basis Grotesque", Arial, sans-serif;
+    --font-receipt: "Basis Grotesque", Arial, sans-serif;
 
     --fs-xs: 0.85rem;
     --fs-sm: 1rem;

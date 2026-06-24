@@ -5,11 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KK26 Wähler:innen-Quittung</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
     <link rel="stylesheet" href="assets/css/common.css">
     <script src="assets/js/theme.js"></script>
     <script>initTheme();</script>
@@ -262,7 +257,9 @@
         }
 
         .voter-receipt .unfunded-section {
-            margin-top: 0;
+            display: grid;
+            gap: 0.45rem;
+            margin-top: 0.05rem;
             padding-top: 0;
             border-top: 0;
         }
@@ -278,14 +275,59 @@
             text-transform: uppercase;
         }
 
-        .voter-receipt .unfunded-table {
-            margin-top: 0;
+        .voter-receipt .unfunded-header {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 4.3rem;
+            align-items: end;
+            column-gap: 0.85rem;
+            padding-bottom: 0.28rem;
+            border-bottom: 2px solid rgba(20, 33, 61, 0.18);
         }
 
-        .voter-receipt .item-row.unfunded td {
+        .voter-receipt .unfunded-header .receipt-section-title {
+            padding: 0;
+            line-height: 1.12;
+        }
+
+        .voter-receipt .unfunded-vote-label {
+            color: rgba(0, 0, 0, 0.52);
+            font-family: var(--font-receipt);
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            line-height: 1;
+            text-align: right;
+            text-transform: uppercase;
+        }
+
+        .voter-receipt .unfunded-list {
+            display: grid;
+            gap: 0;
+        }
+
+        .voter-receipt .unfunded-item {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 4.3rem;
+            align-items: start;
+            column-gap: 0.85rem;
+            padding: 0.26rem 0;
+            border-bottom: 1px solid rgba(20, 33, 61, 0.1);
+        }
+
+        .voter-receipt .unfunded-item .item-title {
             color: rgba(0, 0, 0, 0.5);
             font-size: 0.72rem;
             font-weight: 500;
+            line-height: 1.18;
+            overflow-wrap: anywhere;
+            padding-right: 0;
+        }
+
+        .voter-receipt .unfunded-item .item-vote {
+            color: rgba(0, 0, 0, 0.48);
+            font-size: 0.8rem;
+            line-height: 1;
+            text-align: right;
         }
 
         .voter-receipt .receipt-footer {

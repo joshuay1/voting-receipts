@@ -126,7 +126,7 @@ function renderOutcomeRows(tbody, data, group) {
                     <span class="col-title" style="font-weight: 700; color: var(--text-primary);">${item.Title}</span>
                 </div>
             </td>
-            <td class="col-cost" style="text-align: right; font-weight: 700; font-family: 'JetBrains Mono', monospace;">${cost}</td>
+            <td class="col-cost" style="text-align: right; font-weight: 700; font-family: var(--font-mono);">${cost}</td>
             <td class="col-points" style="text-align: center;">
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 0.15rem;">
                     <div class="metric-value" style="font-size: 1rem; font-weight: 800; color: var(--text-primary);">${formatOutcomeNumber(totalUtility, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</div>
@@ -153,7 +153,7 @@ function renderOutcomeRows(tbody, data, group) {
                         <span class="budget-flow-segment budget-flow-segment-current" style="display: block; width: ${currentSegmentPct}%; background: ${groupColor};"></span>
                         <span class="budget-flow-segment budget-flow-segment-spent" style="display: block; width: ${spentSegmentPct}%; background: rgba(0,0,0,0.16);"></span>
                     </div>
-                    <div class="budget-flow-labels" style="display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #888;">
+                    <div class="budget-flow-labels" style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.7rem; color: #888;">
                         <div class="budget-flow-remaining">
                             <span class="budget-flow-prefix" style="color: #bbb; margin-right: 0.5rem;">${t('outcomes.table.available')}</span>
                             <span class="budget-flow-value" style="font-weight: 800; color: var(--text-primary);">${formatOutcomeNumber(availableBefore, { maximumFractionDigits: 0 })}</span>

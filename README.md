@@ -85,7 +85,7 @@ pipeline should remain outside this public repository.
 │   ├── css/
 │   ├── js/
 │   └── data/               # public anonymized JSON/JS data
-├── CNAME                   # kk26.win
+├── CNAME                   # equalshares.kulturkomitee.win
 ├── .nojekyll
 └── .github/workflows/      # GitHub Pages deployment
 ```

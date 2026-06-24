@@ -92,11 +92,10 @@ function renderReceipt(r) {
 
     const unfundedRows = unfundedItems
         .map(it => `
-            <tr class="item-row unfunded">
-                <td class="item-title col-title" data-project="${it.project_id}">${truncate(it.title, 34)}</td>
-                <td class="item-vote col-vote">${getVoteLabel(it.vote)}</td>
-                <td class="item-amount col-amount">–</td>
-            </tr>
+            <div class="unfunded-item">
+                <span class="item-title" data-project="${it.project_id}">${truncate(it.title, 42)}</span>
+                <span class="item-vote">${getVoteLabel(it.vote)}</span>
+            </div>
         `).join('');
 
     const code = `SKKG-KK26-${r.group}-${r.voter_id.replace(/\s+/g, '')}`;
@@ -153,21 +152,13 @@ function renderReceipt(r) {
             <div class="receipt-divider dashed"></div>
 
             <div class="unfunded-section">
-                <table class="receipt-table unfunded-table">
-                    <thead>
-                        <tr>
-                            <th class="receipt-section-title col-title" colspan="3">${t('receipts.section.unfunded')}</th>
-                        </tr>
-                        <tr>
-                            <th class="col-title">${t('receipts.table.article')}</th>
-                            <th class="col-vote">${t('receipts.table.vote')}</th>
-                            <th class="col-amount">${t('receipts.table.amount')}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${unfundedRows}
-                    </tbody>
-                </table>
+                <div class="unfunded-header">
+                    <div class="receipt-section-title">${t('receipts.section.unfunded')}</div>
+                    <div class="unfunded-vote-label">${t('receipts.table.vote')}</div>
+                </div>
+                <div class="unfunded-list">
+                    ${unfundedRows}
+                </div>
             </div>
 
             <div class="receipt-divider double"></div>
