@@ -116,5 +116,5 @@ project needs enough backing and enough remaining supporter budget to be funded.
 Further reading:
 
 - https://equalshares.net/de/explanation/
-- https://arxiv.org/abs/2502.05017
+- https://dl.acm.org/doi/10.1145/3715275.3732205
 - https://dl.acm.org/doi/10.1145/3772363.3798958
